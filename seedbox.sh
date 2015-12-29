@@ -4,16 +4,28 @@
 #
 #  Copyright (c) 2015 arakasi72 (https://github.com/arakasi72)
 #
+# 
+# 
+# 
 #  --> Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 # AM MODIFICAT
-# 26 SERVERIP=$(ip a s eth0 | awk '/inet / {print$2}' | cut -d/ -f1)
+# 32 SERVERIP=$(ip a s eth0 | awk '/inet / {print$2}' | cut -d/ -f1)
+# WEBPASS=''si sshport='' nu mai sunt nule 43,45 au valori 44,46, anulat 300, 552
 # anulat 83-90 120-139
 # 288 sed -i '/^PermitRootLogin/ c\PermitRootLogin no' /etc/ssh/sshd_config
 # 313 grep "AllowGroups sudo sshuser" /etc/ssh/sshd_config > /dev/null || echo "AllowGroups sudo sshuser" >> /etc/ssh/sshd_config
-# adugat 586-592
+# adugat 586-592 (index)
+# adugat 567  (php)
+# adugat 595-597 (php)
+# 
+# 
+# 
+# 
+# 
 ######################################################################
 
 PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/bin:/sbin
+
 
 rtorrentrel='0.9.6'
 libtorrentrel='0.13.6'
@@ -28,14 +40,16 @@ OSNAME=$(cat /etc/issue.net | cut -d' ' -f1)
 RELNO=$(cat /etc/issue.net | tr -d -c 0-9. | cut -d. -f1)
 
 SERVERIP=$(hostname --ip-address)
-WEBPASS=''
+# WEBPASS=''
+WEBPASS='$2'
+# sshport=''
+sshport='28499'
 cronline1="@reboot sleep 10; /usr/local/bin/rtcheck irssi rtorrent"
 cronline2="*/10 * * * * /usr/local/bin/rtcheck irssi rtorrent"
 DLFLAG=1
 logfile="/dev/null"
 gotip=0
 install_rt=0
-sshport=''
 rudevflag=1
 passfile='/etc/nginx/.htpasswd'
 package_list="sudo nano autoconf build-essential ca-certificates comerr-dev curl cfv dtach htop irssi libcloog-ppl-dev libcppunit-dev libcurl3 libncurses5-dev libterm-readline-gnu-perl libsigc++-2.0-dev libperl-dev libtool libxml2-dev ncurses-base ncurses-term ntp patch pkg-config php5-fpm php5 php5-cli php5-dev php5-curl php5-geoip php5-mcrypt php5-xmlrpc python-scgi screen subversion texinfo unzip zlib1g-dev libcurl4-openssl-dev mediainfo python-software-properties software-properties-common aptitude php5-json nginx-full apache2-utils git libarchive-zip-perl libnet-ssleay-perl libhtml-parser-perl libxml-libxml-perl libjson-perl libjson-xs-perl libxml-libxslt-perl libjson-rpc-perl libarchive-zip-perl"
@@ -158,23 +172,23 @@ fi
 
 # set and prepare user
 if test "$SUDO_USER" = "root" || { test -z "$SUDO_USER" &&  test "$LOGNAME" = "root"; }; then
-  echo "Enter the name of the user to install to"
-  echo "This will be your primary user"
-  echo "It can be an existing user or a new user"
-  echo
+  # echo "Enter the name of the user to install to"
+  # echo "This will be your primary user"
+  # echo "It can be an existing user or a new user"
+  # echo
 
-  confirm_name=1
-  while [ $confirm_name = 1 ]
-    do
-      read -p "Enter user name: " answer
-      addname=$answer
-      echo -n "Confirm that user name is $answer y/n? "
-      if ask_user; then
-        confirm_name=0
-      fi
-    done
+  # confirm_name=1
+  # while [ $confirm_name = 1 ]
+  #   do
+  #     read -p "Enter user name: " answer
+  #     addname=$answer
+  #     echo -n "Confirm that user name is $answer y/n? "
+  #     if ask_user; then
+  #       confirm_name=0
+  #     fi
+  #   done
 
-  user=$addname
+  user=$1
 
   if id -u $user >/dev/null 2>&1; then
     echo "$user already exists"
@@ -283,7 +297,7 @@ echo "Securing SSH" | tee -a $logfile
 
 portline=$(grep 'Port ' /etc/ssh/sshd_config)
 if [ "$portline" = "Port 22" ]; then
-  sshport=$(random 21000 29000)
+  # sshport=$(random 21000 29000)
   sed -i "s/Port 22/Port $sshport/g" /etc/ssh/sshd_config
 fi
 
@@ -535,7 +549,7 @@ if [ -f "/etc/apache2/ports.conf" ]; then
 fi
 
 echo "Installing nginx" | tee -a $logfile
-WEBPASS=$(genpasswd)
+# WEBPASS=$(genpasswd)
 htpasswd -c -b $passfile $user $WEBPASS >> $logfile 2>&1
 chown www-data:www-data $passfile
 chmod 640 $passfile
@@ -562,7 +576,8 @@ fi
 
 mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.old
 
-rtgetscripts /etc/nginx/sites-available/default nginxsite
+# rtgetscripts /etc/nginx/sites-available/default nginxsite
+wget -q --no-check-certificate --output-document=/etc/nginx/sites-available/default https://raw.githubusercontent.com/dldfree/seedbox/master/my_default
 rtgetscripts /etc/nginx/sites-available/dload-loc nginxsitedl
 
 echo "location ~ \.php$ {" > /etc/nginx/conf.d/php
@@ -590,6 +605,10 @@ cat > "/var/www/index.html" << EOF
 <a href="New/">Link</a>
 </body></html>
 EOF
+
+# nginx-with-php5
+sed -i '/keepalive_timeout/c\       keepalive_timeout 2;' /etc/nginx/nginx.conf
+sed -i '/cgi.fix_pathinfo=/c\cgi.fix_pathinfo=0' /etc/php5/fpm/php.ini
 
 service nginx restart && service php5-fpm restart
 
