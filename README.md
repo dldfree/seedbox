@@ -2,4 +2,4 @@ wget --no-check-certificate https://raw.githubusercontent.com/dldfree/seedbox/ma
 
 and
 
-bash rtinst.sh username password
+bash seedbox.sh
