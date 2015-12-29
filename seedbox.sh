@@ -5,7 +5,12 @@
 #  Copyright (c) 2015 arakasi72 (https://github.com/arakasi72)
 #
 #  --> Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
-#
+# AM MODIFICAT
+# 26 SERVERIP=$(ip a s eth0 | awk '/inet / {print$2}' | cut -d/ -f1)
+# anulat 83-90 120-139
+# 288 sed -i '/^PermitRootLogin/ c\PermitRootLogin no' /etc/ssh/sshd_config
+# 313 grep "AllowGroups sudo sshuser" /etc/ssh/sshd_config > /dev/null || echo "AllowGroups sudo sshuser" >> /etc/ssh/sshd_config
+# adugat 586-592
 ######################################################################
 
 PATH=/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/bin:/sbin
@@ -16,14 +21,13 @@ rtorrentloc='http://rtorrent.net/downloads/rtorrent-'$rtorrentrel'.tar.gz'
 libtorrentloc='http://rtorrent.net/downloads/libtorrent-'$libtorrentrel'.tar.gz'
 xmlrpcloc='https://svn.code.sf.net/p/xmlrpc-c/code/stable'
 
-BLOB=master
-RTDIR=https://raw.githubusercontent.com/arakasi72/rtinst/$BLOB/scripts
+RTDIR=https://raw.githubusercontent.com/arakasi72/rtinst/master/scripts
 
 FULLREL=$(cat /etc/issue.net)
 OSNAME=$(cat /etc/issue.net | cut -d' ' -f1)
 RELNO=$(cat /etc/issue.net | tr -d -c 0-9. | cut -d. -f1)
 
-SERVERIP=$(ip a s eth0 | awk '/inet / {print$2}' | cut -d/ -f1)
+SERVERIP=$(hostname --ip-address)
 WEBPASS=''
 cronline1="@reboot sleep 10; /usr/local/bin/rtcheck irssi rtorrent"
 cronline2="*/10 * * * * /usr/local/bin/rtcheck irssi rtorrent"
@@ -79,14 +83,14 @@ while true
   done
 }
 
-enter_ip() {
-echo "enter your server's name or IP address"
-echo "e.g. example.com or 213.0.113.113"
-read SERVERIP
-echo "Your Server IP/Name is $SERVERIP"
-echo -n "Is this correct y/n? "
-ask_user
-}
+# enter_ip() {
+# echo "enter your server's name or IP address"
+# echo "e.g. example.com or 213.0.113.113"
+# read SERVERIP
+# echo "Your Server IP/Name is $SERVERIP"
+# echo -n "Is this correct y/n? "
+# ask_user
+# }
 
 # determine system
 if [ $OSNAME = "Ubuntu" -a $RELNO -ge 12 ] || [ $OSNAME = "Debian" -a $RELNO -ge 7 ]  || [ $OSNAME = "Raspbian" -a $RELNO -ge 7 ]; then
@@ -117,25 +121,25 @@ if [ $# -gt 0 ]; then
 fi
 
 # check IP Address
-case $SERVERIP in
-    127* ) gotip=1 ;;
-  local* ) gotip=1 ;;
-      "" ) gotip=1 ;;
-esac
+# case $SERVERIP in
+#     127* ) gotip=1 ;;
+#   local* ) gotip=1 ;;
+#       "" ) gotip=1 ;;
+# esac
 
-if [ $gotip = 1 ]; then
-  echo "Unable to determine your IP address"
-  gotip=enter_ip
-else
-  echo "Your Server IP/Name is $SERVERIP"
-  echo -n "Is this correct y/n? "
-  gotip=ask_user
-fi
+# if [ $gotip = 1 ]; then
+#   echo "Unable to determine your IP address"
+#   gotip=enter_ip
+# else
+#   echo "Your Server IP/Name is $SERVERIP"
+#   echo -n "Is this correct y/n? "
+#   gotip=ask_user
+# fi
 
-until $gotip
-    do
-      gotip=enter_ip
-    done
+# until $gotip
+#     do
+#       gotip=enter_ip
+#     done
 
 echo "Your server's IP/Name is set to $SERVERIP"
 
@@ -284,7 +288,7 @@ if [ "$portline" = "Port 22" ]; then
 fi
 
 sed -i "s/X11Forwarding yes/X11Forwarding no/g" /etc/ssh/sshd_config
-sed -i '/^PermitRootLogin/ c\PermitRootLogin no' /etc/ssh/sshd_config
+sed -i '/^PermitRootLogin/ c\PermitRootLogin yes' /etc/ssh/sshd_config
 
 usedns=$(grep UseDNS /etc/ssh/sshd_config)
 if [ -z "$usedns" ]; then
@@ -307,7 +311,7 @@ if ! [ -z "$allowlist" ]; then
     done
   sed -i "s/$allowlist//g" /etc/ssh/sshd_config
 fi
-grep "AllowGroups sudo sshuser" /etc/ssh/sshd_config > /dev/null || echo "AllowGroups sudo sshuser" >> /etc/ssh/sshd_config
+grep "AllowGroups sudo sshuser" /etc/ssh/sshd_config > /dev/null || echo "AllowGroups sudo sshuser root" >> /etc/ssh/sshd_config
 
 service ssh restart
 sshport=$(grep 'Port ' /etc/ssh/sshd_config | sed 's/[^0-9]*//g')
@@ -578,6 +582,14 @@ echo "        expires 30d;" >> /etc/nginx/conf.d/cache
 echo "}" >> /etc/nginx/conf.d/cache
 
 sed -i "s/<Server IP>/$SERVERIP/g" /etc/nginx/sites-available/default
+
+cat > "/var/www/index.html" << EOF
+<html><head><title>Root page</title></head><body>
+<a href="rutorrent/">ruTorrent</a><br/>
+<a href="rl/">RapidLeech</a><br/>
+<a href="New/">Link</a>
+</body></html>
+EOF
 
 service nginx restart && service php5-fpm restart
 
