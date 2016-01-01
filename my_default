@@ -20,12 +20,10 @@ server {
 
         #include /etc/nginx/sites-available/dload-loc;
 
-        location /doc/ {
-                alias /usr/share/doc/;
-                autoindex on;
-                allow 127.0.0.1;
-                allow ::1;
-                deny all;
+        location /New {
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
         }
 
         location ~ \.php$ {
@@ -70,12 +68,11 @@ server {
 
         #include /etc/nginx/sites-available/dload-loc;
 
-        location /doc/ {
-                alias /usr/share/doc/;
-                autoindex on;
-                allow 127.0.0.1;
-                allow ::1;
-                deny all;
+        
+        location /New {
+        autoindex on;
+        autoindex_exact_size off;
+        autoindex_localtime on;
         }
 
         location ~ \.php$ {
