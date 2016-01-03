@@ -40,10 +40,10 @@ OSNAME=$(cat /etc/issue.net | cut -d' ' -f1)
 RELNO=$(cat /etc/issue.net | tr -d -c 0-9. | cut -d. -f1)
 
 SERVERIP=$(hostname --ip-address)
-# WEBPASS=''
-WEBPASS='$2'
-# sshport=''
-sshport='28499'
+WEBPASS=''
+# WEBPASS='$2'
+sshport=''
+# sshport='28499'
 cronline1="@reboot sleep 10; /usr/local/bin/rtcheck irssi rtorrent"
 cronline2="*/10 * * * * /usr/local/bin/rtcheck irssi rtorrent"
 DLFLAG=1
@@ -172,23 +172,23 @@ fi
 
 # set and prepare user
 if test "$SUDO_USER" = "root" || { test -z "$SUDO_USER" &&  test "$LOGNAME" = "root"; }; then
-  # echo "Enter the name of the user to install to"
-  # echo "This will be your primary user"
-  # echo "It can be an existing user or a new user"
-  # echo
+  echo "Enter the name of the user to install to"
+  echo "This will be your primary user"
+  echo "It can be an existing user or a new user"
+  echo
 
-  # confirm_name=1
-  # while [ $confirm_name = 1 ]
-  #   do
-  #     read -p "Enter user name: " answer
-  #     addname=$answer
-  #     echo -n "Confirm that user name is $answer y/n? "
-  #     if ask_user; then
-  #       confirm_name=0
-  #     fi
-  #   done
+  confirm_name=1
+  while [ $confirm_name = 1 ]
+    do
+      read -p "Enter user name: " answer
+      addname=$answer
+      echo -n "Confirm that user name is $answer y/n? "
+      if ask_user; then
+        confirm_name=0
+      fi
+   done
 
-  user=$1
+  user=$addname
 
   if id -u $user >/dev/null 2>&1; then
     echo "$user already exists"
