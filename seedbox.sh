@@ -10,7 +10,6 @@
 #  --> Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 # AM MODIFICAT
 # 32 SERVERIP=$(ip a s eth0 | awk '/inet / {print$2}' | cut -d/ -f1)
-# WEBPASS=''si sshport='' nu mai sunt nule 43,45 au valori 44,46, anulat 300, 552
 # anulat 83-90 120-139
 # 288 sed -i '/^PermitRootLogin/ c\PermitRootLogin no' /etc/ssh/sshd_config
 # 313 grep "AllowGroups sudo sshuser" /etc/ssh/sshd_config > /dev/null || echo "AllowGroups sudo sshuser" >> /etc/ssh/sshd_config
@@ -297,7 +296,7 @@ echo "Securing SSH" | tee -a $logfile
 
 portline=$(grep 'Port ' /etc/ssh/sshd_config)
 if [ "$portline" = "Port 22" ]; then
-  # sshport=$(random 21000 29000)
+  sshport=$(random 21000 29000)
   sed -i "s/Port 22/Port $sshport/g" /etc/ssh/sshd_config
 fi
 
@@ -549,7 +548,7 @@ if [ -f "/etc/apache2/ports.conf" ]; then
 fi
 
 echo "Installing nginx" | tee -a $logfile
-# WEBPASS=$(genpasswd)
+WEBPASS=$(genpasswd)
 htpasswd -c -b $passfile $user $WEBPASS >> $logfile 2>&1
 chown www-data:www-data $passfile
 chmod 640 $passfile
